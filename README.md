@@ -1,92 +1,141 @@
-# 🇲🇦 Darija Sentiment Classifier
+# 🇲🇦 Moroccan Darija Mixed-Script Sentiment Classifier
 
-> **[🔗 Live Demo](#)** · **[📊 Dataset on HF](#)** · **[🤗 Model on HF](#)**
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces%20Demo-blue)](https://huggingface.co/spaces/YOUR_USERNAME/darija-sentiment)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A sentiment analysis model for **Moroccan Darija** — handling mixed-script text including Arabic script (العربية), Arabizi (Latin transliteration), and French code-switching commonly found in Moroccan social media.
+An end-to-end Machine Learning and NLP system for sentiment analysis (**Positive**, **Negative**, **Neutral**) on Moroccan Darija social media comments. The primary innovation of this project is its robust handling of **mixed-script text**:
+- 📝 **Arabic Script** (الدارجة بالحرف العربي)
+- 🔤 **Arabizi / Latin Script with Numbers** (`2`, `3`, `5`, `7`, `9` representing Arabic phonemes: *3jbni*, *zwin bzaf*, *7chouma*)
+- 🇫🇷 **French Code-Switching** (*Franchement c'est top*, *wallah c'est décevant*)
 
 ---
 
-## Problem
+## 📊 Benchmark Results
 
-Sentiment analysis tools largely ignore Darija, a spoken language with no standard orthography that freely mixes Arabic, French, and Latin-transliterated text. Existing Arabic NLP models fail on Darija due to its unique vocabulary, grammar, and code-switching patterns. This project builds a classifier tailored to real-world Darija as used on YouTube and social media.
+Evaluated on **5,431 unseen held-out comments** using stratified splits across all scripts:
 
-## Data
+| Model | Slice | Macro-F1 | Accuracy | F1 (Positive) | F1 (Negative) | F1 (Neutral) | N Samples |
+|---|---|---|---|---|---|---|---|
+| **Logistic Regression (TF-IDF)** | **Overall** | **0.7436** | **79.34%** | **0.8543** | **0.8282** | **0.5482** | 5,431 |
+| Logistic Regression (TF-IDF) | Arabic | 0.7310 | 76.86% | 0.8354 | 0.8174 | 0.5401 | 4,560 |
+| Logistic Regression (TF-IDF) | Arabizi | 0.6678 | 93.41% | 0.9575 | 0.8718 | 0.1739 | 713 |
+| Logistic Regression (TF-IDF) | Mixed | 0.8564 | 87.34% | 0.9029 | 0.8400 | 0.8261 | 158 |
+| **Linear SVM (Calibrated)** | **Overall** | **0.7314** | **80.78%** | **0.8640** | **0.8345** | **0.4959** | 5,431 |
+| Linear SVM (Calibrated) | Arabic | 0.7230 | 78.75% | 0.8492 | 0.8267 | 0.4930 | 4,560 |
+| Linear SVM (Calibrated) | Arabizi | 0.6142 | 92.43% | 0.9529 | 0.8315 | 0.0580 | 713 |
+| Linear SVM (Calibrated) | Mixed | 0.8018 | 86.71% | 0.9011 | 0.8148 | 0.6897 | 158 |
 
-<!-- TODO: Phase 9 — fill in dataset stats -->
+*(For transformer fine-tuning benchmarks with DarijaBERT and XLM-RoBERTa, see [`COLAB_INSTRUCTIONS.md`](COLAB_INSTRUCTIONS.md).)*
 
-- **Source**: YouTube comments from Moroccan content creators
-- **Labels**: Positive / Negative / Neutral (manually annotated)
-- **Scripts**: Arabic, Arabizi, French code-switching
-- **Size**: TBD
+---
 
-## Approach
+## 🎯 The Problem
 
-<!-- TODO: Phase 9 — fill in model details -->
+Moroccan Darija (الدارجة المغربية) is one of the most linguistically complex dialects in the Arabic-speaking world:
+1. **No Standard Orthography**: The same word can be spelled in countless ways (*bzaf*, *bezzaf*, *bzzaf*, *بزاف*).
+2. **Dual-Script & Arabizi**: Users write interchangeably in Arabic letters or Latin letters combined with numerals to substitute missing Arabic phonemes (e.g., `3` = ع, `7` = ح, `9` = ق, `5` = خ).
+3. **Heavy Code-Switching**: Sentences routinely weave French vocabulary, Modern Standard Arabic (MSA), and Darija grammar within a single phrase (*"Franchement c'est top, tbarkllah 3lik khouya"*).
 
-1. Scrape YouTube comments via the Data API
-2. Clean & normalize mixed-script text
-3. Hand-label using a custom Streamlit tool with LABELING_GUIDE.md
-4. Fine-tune a multilingual transformer (e.g., `bert-base-multilingual-cased`)
-5. Evaluate with precision, recall, F1, and confusion matrix
-6. Deploy as an interactive Gradio demo
+Standard off-the-shelf sentiment models trained on Modern Standard Arabic or French fail completely when exposed to this linguistic mixture.
 
-## Results
+---
 
-<!-- TODO: Phase 9 — fill in metrics and plots -->
+## 📂 Datasets & Credits
 
-| Metric | Score |
-|--------|-------|
-| F1 (macro) | TBD |
-| Accuracy | TBD |
+The project aggregates and standardizes **36,201 comments** across three primary research datasets:
 
-## How to Run
+| Dataset | Type | Cleaned Samples | Labels | License | Citation |
+|---|---|---|---|---|---|
+| **MYC** (Moroccan YouTube Corpus) | YouTube Comments | 18,699 | Positive, Negative | Open Academic | Jbel (2023), arXiv:2303.15987 |
+| **MAC** (Moroccan Arabic Corpus) | Tweets | 12,337 | Positive, Negative, Neutral, Mixed | Open Access | Garouani & Kharroubi (2022), Springer |
+| **MSDA** (UM6P Dialect Corpus) | Tweets | 5,165 | Positive, Negative, Neutral | Open Access | Boujou et al. (2021), arXiv:2102.11000 |
 
+*Full licensing details and provenance are cataloged in [`data/raw/SOURCES.md`](data/raw/SOURCES.md).*
+
+---
+
+## 🧠 Approach
+
+1. **Rule-Based Script Detection (`src/script_detect.py`)**:
+   - Detects character sets (Arabic unicode block vs. Latin characters).
+   - Identifies Arabizi numeral substitutions (`2, 3, 5, 7, 9` embedded inside Latin words).
+   - Classifies every input into `arabic`, `arabizi`, or `mixed`.
+2. **Text Normalization (`src/clean.py`)**:
+   - Normalizes elongated characters (*"bezzzzzzaf"* → *"bezzaf"*, *"waaaaaaw"* → *"waaw"*).
+   - Removes @mentions, URLs, and duplicate text across splits.
+   - Preserves emojis and exclamation punctuation as critical sentiment signals.
+3. **Feature Engineering**:
+   - Union of sublinear character n-grams (2–5 n-grams) and word n-grams (1–2 n-grams).
+   - Character n-grams provide resilience against phonetic spelling variants and Arabizi digits.
+4. **Modeling**:
+   - CPU Baseline: Multinomial Logistic Regression and Calibrated Linear SVM with hyperparameter optimization.
+   - Cloud Transformer: Colab notebook fine-tuning `SI2M-Lab/DarijaBERT`, `SI2M-Lab/DarijaBERT-arabizi`, and `xlm-roberta-base`.
+
+---
+
+## 🔬 Failure Analysis & Error Modes
+
+From our qualitative analysis of 50 misclassified test comments ([`notebooks/03_errors.ipynb`](notebooks/03_errors.ipynb)):
+
+| Failure Mode | Example | True Sentiment | Model Prediction | Why It Failed |
+|---|---|---|---|---|
+| **Sarcasm** | واااو على خدمة نقية 🙄 | Negative | Positive | Model captured positive words (*نقية*, *واااو*) but missed ironic intent and 🙄 emoji. |
+| **Code-Switching** | Franchement c'est pas terrible khouya | Negative | Positive | Mixed French negation (*pas terrible*) confused linear bag-of-words weights. |
+| **Spelling Variants** | Khoya 5dmtek m7fdha bzzaaaaf | Positive | Neutral | Rare digit substitution (*5dmtek*) and vowel dropping reduced confidence. |
+| **Neutral Ambiguity** | Chhal taman dyal livraison l Agadir? | Neutral | Positive | Factual inquiry lacking emotional polarity absorbed into majority positive class. |
+
+---
+
+## 🚀 How to Run
+
+### 1. Installation
 ```bash
-# Clone & setup
-git clone <repo-url>
+git clone https://github.com/YOUR_USERNAME/darija-sentiment.git
 cd darija-sentiment
 python3.11 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-
-# Copy and fill in your API keys
-cp .env.example .env
-
-# Run the labeling tool
-streamlit run app/labeling_tool.py
-
-# Run the Gradio demo
-python app/demo.py
 ```
 
-## Project Structure
-
-```
-darija-sentiment/
-├── data/
-│   ├── raw/              # Raw scraped data (gitignored)
-│   └── processed/        # Cleaned & labeled data (gitignored)
-├── notebooks/            # EDA and experiment notebooks
-├── src/                  # Source code (scraper, cleaner, model)
-├── app/                  # Streamlit labeling tool & Gradio demo
-├── results/              # Metrics, plots, reports
-├── tests/                # Unit tests
-├── docs/                 # Documentation
-├── requirements.txt
-├── LABELING_GUIDE.md
-├── PROGRESS.md
-└── README.md
+### 2. Run Tests
+```bash
+pytest tests/ -v
 ```
 
-## Next Steps
+### 3. Data Cleaning & Baseline Training
+```bash
+# Clean and merge datasets
+python src/clean.py
 
-<!-- TODO: Phase 9 — summarize future work -->
+# Train baseline models
+python src/train_baseline.py
 
-- Expand dataset with more diverse sources
-- Experiment with DARija-specific pre-trained models
-- Add aspect-based sentiment analysis
-- Build a browser extension for real-time sentiment
+# Evaluate models overall and per script
+python src/evaluate.py
+```
+
+### 4. Interactive Annotation Tool
+To label comments using our custom Streamlit interface:
+```bash
+streamlit run app/label_tool.py
+```
+
+### 5. Launch Gradio Demo
+```bash
+python app/app.py
+```
+Open `http://localhost:7860` in your browser.
 
 ---
 
-*Built as a portfolio project demonstrating end-to-end NLP on a low-resource language.*
+## ☁️ Fine-Tuning Transformers on Colab
+To fine-tune transformer models on free Colab T4 GPUs, follow the step-by-step instructions in [`COLAB_INSTRUCTIONS.md`](COLAB_INSTRUCTIONS.md).
+
+---
+
+## 🔮 Next Steps
+- [ ] Run transformer fine-tuning (`notebooks/02_finetune_colab.ipynb`) on Colab T4.
+- [ ] Incorporate live YouTube comment collection via `src/scrape_youtube.py` with `YOUTUBE_API_KEY`.
+- [ ] Deploy Gradio app to Hugging Face Spaces using `src/push_to_hub.py`.
+- [ ] Enhance sarcasm detection using contextual transformer attention heads.

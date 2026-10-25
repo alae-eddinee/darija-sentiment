@@ -13,8 +13,11 @@ env/
 .env
 
 # Data directories (large files, not tracked)
-data/raw/
-data/processed/
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/SOURCES.md
+data/processed/*
+!data/processed/.gitkeep
 
 # Jupyter
 .ipynb_checkpoints/
