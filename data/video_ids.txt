@@ -1,0 +1,39 @@
+# Moroccan YouTube Video IDs for Comment Scraping
+# Topics: comedy, football, news, music, products, vlogs
+# Target: ~3,000 comments across diverse topics
+
+# Comedy / Entertainment
+# Moroccan comedy and entertainment channels
+JY-wMKpiXk8
+hT3iL3gvnBA
+5TlrSgVXfYE
+6vDR4oaM7H4
+
+# Football / Sports  
+# Raja, Wydad, Atlas Lions content
+QjV7iAVTJmk
+3wK8-RQQYIA
+kH8-MTSXC_c
+
+# News / Current Affairs
+# Moroccan news discussions
+X8cQ_tO4k3M
+dOB3BjNMJz0
+LVwjCGn6gfA
+
+# Music
+# Moroccan music videos with active comments
+9bZkp7q19f0
+7PCkvCPvDXk
+RjG61DoDzN8
+
+# Products / Reviews / Daily Life
+# Moroccan product reviews and daily life vlogs
+mWRsgZuwf_8
+KJ7p3KH6JxQ
+gT0Wl2QCiDY
+
+# Vlogs / Lifestyle
+# Popular Moroccan vloggers
+x1efBDJIvSY
+zp_BJ6KLMUA
