@@ -70,8 +70,9 @@ def create_splits(df: pd.DataFrame, test_size: float = 0.15, val_size: float = 0
     )
     
     # Clean up
-    for split_df in [train, val, test]:
-        split_df.drop(columns=["_strat_key"], inplace=True)
+    train = train.drop(columns=["_strat_key"])
+    val = val.drop(columns=["_strat_key"])
+    test = test.drop(columns=["_strat_key"])
     
     print(f"Split sizes: train={len(train)}, val={len(val)}, test={len(test)}")
     print(f"Train labels: {train['label'].value_counts().to_dict()}")
@@ -136,7 +137,7 @@ def train_models(X_train, y_train, X_val, y_val):
             ("features", build_tfidf_features()),
             ("clf", LogisticRegression(
                 C=C, max_iter=1000, solver="lbfgs",
-                multi_class="multinomial", random_state=42,
+                random_state=42,
                 class_weight="balanced"
             ))
         ])
@@ -161,7 +162,7 @@ def train_models(X_train, y_train, X_val, y_val):
         pipeline = Pipeline([
             ("features", build_tfidf_features()),
             ("clf", CalibratedClassifierCV(
-                LinearSVC(C=C, max_iter=2000, class_weight="balanced", random_state=42),
+                estimator=LinearSVC(C=C, max_iter=2000, class_weight="balanced", random_state=42, dual="auto"),
                 cv=3
             ))
         ])
@@ -211,10 +212,13 @@ def main():
     splits_dir = Path(args.splits_dir)
     save_split_ids(train, val, test, splits_dir)
     
-    # Train models
-    X_train, y_train = train["text"].values, train["label"].values
-    X_val, y_val = val["text"].values, val["label"].values
-    X_test, y_test = test["text"].values, test["label"].values
+    # Train models - ensure plain numpy object arrays (not pyarrow ChunkedArray)
+    X_train = np.asarray(train["text"].astype(str).tolist(), dtype=object)
+    y_train = np.asarray(train["label"].astype(str).tolist())
+    X_val = np.asarray(val["text"].astype(str).tolist(), dtype=object)
+    y_val = np.asarray(val["label"].astype(str).tolist())
+    X_test = np.asarray(test["text"].astype(str).tolist(), dtype=object)
+    y_test = np.asarray(test["label"].astype(str).tolist())
     
     models = train_models(X_train, y_train, X_val, y_val)
     

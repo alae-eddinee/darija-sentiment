@@ -34,6 +34,13 @@ results/*.png
 results/*.jpg
 results/*.jpeg
 
+# Model checkpoints and weights
+*.pkl
+*.bin
+*.pt
+*.safetensors
+models/
+
 # Distribution / packaging
 dist/
 build/

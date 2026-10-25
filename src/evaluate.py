@@ -87,9 +87,11 @@ def evaluate_model(model_name: str, model, test_df: pd.DataFrame,
     print(f"📊 Evaluating: {model_name}")
     print(f"{'='*60}")
     
-    X_test = test_df["text"].values
-    y_test = test_df["label"].values
+    X_test = np.asarray(test_df["text"].astype(str).tolist(), dtype=object)
+    y_test = np.asarray(test_df["label"].astype(str).tolist())
+    scripts_arr = np.asarray(test_df["script"].astype(str).tolist())
     y_pred = model.predict(X_test)
+    y_pred = np.asarray(y_pred)
     
     all_metrics = []
     
@@ -115,7 +117,7 @@ def evaluate_model(model_name: str, model, test_df: pd.DataFrame,
     
     # --- Per-script metrics ---
     for script in SCRIPTS:
-        mask = test_df["script"].values == script
+        mask = (scripts_arr == script)
         if mask.sum() == 0:
             print(f"\n  {script}: no samples, skipping")
             continue
