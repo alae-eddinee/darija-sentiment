@@ -30,13 +30,20 @@ LABEL_MAP = {
     "neutral": "neutral",
     # Numeric
     "1": "positive",
+    "1.0": "positive",
     "0": "negative",
+    "0.0": "negative",
     "-1": "negative",
+    "-1.0": "negative",
     "2": "neutral",
+    "2.0": "neutral",
     # Arabic
     "إيجابي": "positive",
+    "ايجابي": "positive",
     "سلبي": "negative",
     "محايد": "neutral",
+    "ماكينش إحساس": "neutral",
+    "ماكينش احساس": "neutral",
     # French
     "positif": "positive",
     "négatif": "negative",
@@ -52,7 +59,8 @@ LABEL_MAP = {
     "neg": "negative",
     "neu": "neutral",
     # MAC-specific
-    "mixed": "neutral",  # Map 'mixed' sentiment to neutral
+    "mixed": "neutral",  # Map 'mixed' sentiment to neutral as per labeling guide
+    "Mixed": "neutral",
     "P": "positive",
     "N": "negative",
     "NEU": "neutral",
@@ -119,50 +127,43 @@ def load_myc(data_dir: Path) -> pd.DataFrame:
         print(f"⚠️  MYC directory not found at {myc_dir}")
         return pd.DataFrame()
     
-    dfs = []
-    for f in myc_dir.glob("*.csv"):
-        try:
-            df = pd.read_csv(f, encoding="utf-8")
-            dfs.append(df)
-        except Exception as e:
-            print(f"  Error reading {f}: {e}")
-            try:
-                df = pd.read_csv(f, encoding="utf-8-sig")
-                dfs.append(df)
-            except Exception:
-                try:
-                    df = pd.read_csv(f, encoding="latin-1")
-                    dfs.append(df)
-                except Exception as e2:
-                    print(f"  Could not read {f}: {e2}")
-    
-    if not dfs:
-        # Try TSV
-        for f in myc_dir.glob("*.tsv"):
-            try:
-                df = pd.read_csv(f, sep="\t", encoding="utf-8")
-                dfs.append(df)
-            except Exception as e:
-                print(f"  Error reading {f}: {e}")
-    
-    if not dfs:
-        print(f"⚠️  No data files found in {myc_dir}")
+    # Try DATA_CLEANED.csv or DATA_RAW.csv with robust parsing
+    cleaned_file = myc_dir / "DATA_CLEANED.csv"
+    if not cleaned_file.exists():
+        cleaned_file = myc_dir / "DATA_RAW.csv"
+        
+    if not cleaned_file.exists():
+        print(f"⚠️  No MYC data files found in {myc_dir}")
         return pd.DataFrame()
-    
-    df = pd.concat(dfs, ignore_index=True)
-    print(f"  MYC: loaded {len(df)} rows, columns: {list(df.columns)}")
-    
-    # Identify text and label columns (flexible matching)
-    text_col = _find_column(df, ["text", "comment", "Text", "Comment", "review", "sentence"])
-    label_col = _find_column(df, ["label", "sentiment", "Label", "Sentiment", "class", "polarity"])
-    
-    if text_col is None or label_col is None:
-        print(f"  ⚠️  Could not identify text/label columns in MYC. Columns: {list(df.columns)}")
-        return pd.DataFrame()
+        
+    print(f"  Reading MYC file: {cleaned_file.name}")
+    try:
+        with open(cleaned_file, "r", encoding="utf-16") as f:
+            lines = f.readlines()
+    except Exception as e:
+        print(f"  Failed opening as utf-16, trying utf-8: {e}")
+        with open(cleaned_file, "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+            
+    parsed = []
+    # Skip header
+    for line in lines[1:]:
+        line = line.strip()
+        if not line:
+            continue
+        last_comma = line.rfind(",")
+        if last_comma != -1:
+            sentence = line[:last_comma].strip('"\' ')
+            polarity = line[last_comma+1:].strip()
+            if sentence and polarity in ["1", "-1", "1.0", "-1.0"]:
+                parsed.append((sentence, polarity))
+                
+    print(f"  MYC: successfully parsed {len(parsed)} rows")
+    df = pd.DataFrame(parsed, columns=["sentence", "polarity"])
     
     result = pd.DataFrame({
-        "text_raw": df[text_col].astype(str),
-        "original_label": df[label_col].astype(str),
+        "text_raw": df["sentence"].astype(str),
+        "original_label": df["polarity"].astype(str),
         "source": "MYC",
     })
     
@@ -174,7 +175,7 @@ def load_msda(data_dir: Path) -> pd.DataFrame:
     """
     Load MSDA dataset (Moroccan subset of multi-dialect corpus).
     
-    Expected structure: data/raw/MSDA/ with CSV/TSV files.
+    Expected structure: data/raw/MSDA/
     Labels: 3-class (positive, negative, neutral).
     """
     msda_dir = data_dir / "MSDA"
@@ -182,60 +183,46 @@ def load_msda(data_dir: Path) -> pd.DataFrame:
         print(f"⚠️  MSDA directory not found at {msda_dir}")
         return pd.DataFrame()
     
-    dfs = []
-    for ext in ["*.csv", "*.tsv", "*.xlsx"]:
-        for f in msda_dir.glob(ext):
-            try:
-                if f.suffix == ".xlsx":
-                    df = pd.read_excel(f)
-                elif f.suffix == ".tsv":
-                    df = pd.read_csv(f, sep="\t", encoding="utf-8")
-                else:
-                    df = pd.read_csv(f, encoding="utf-8")
-                dfs.append(df)
-                print(f"  Loaded {f.name}: {len(df)} rows")
-            except Exception as e:
-                print(f"  Error reading {f}: {e}")
+    # Check for extracted csv first
+    extracted_csv = msda_dir / "msda_extracted.csv"
+    if extracted_csv.exists():
+        df = pd.read_csv(extracted_csv, encoding="utf-8")
+        print(f"  MSDA: loaded {len(df)} rows from {extracted_csv.name}")
+        return pd.DataFrame({
+            "text_raw": df["text"].astype(str),
+            "original_label": df["sentiment"].astype(str),
+            "source": "MSDA",
+        })
     
-    if not dfs:
-        print(f"⚠️  No data files found in {msda_dir}")
-        return pd.DataFrame()
-    
-    df = pd.concat(dfs, ignore_index=True)
-    print(f"  MSDA: loaded {len(df)} rows, columns: {list(df.columns)}")
-    
-    text_col = _find_column(df, ["text", "tweet", "Text", "Tweet", "sentence", "comment"])
-    label_col = _find_column(df, ["label", "sentiment", "Label", "Sentiment", "class", "polarity"])
-    
-    if text_col is None or label_col is None:
-        print(f"  ⚠️  Could not identify text/label columns in MSDA. Columns: {list(df.columns)}")
-        return pd.DataFrame()
-    
-    # Filter for Moroccan dialect if dialect column exists
-    dialect_col = _find_column(df, ["dialect", "Dialect", "country", "lang"])
-    if dialect_col is not None:
-        moroccan_keywords = ["morocc", "maroc", "darija", "mor", "MA"]
-        mask = df[dialect_col].astype(str).str.lower().str.contains(
-            "|".join(moroccan_keywords), na=False
-        )
-        df_filtered = df[mask]
-        print(f"  Filtered to Moroccan subset: {len(df_filtered)} rows (from {len(df)})")
-        df = df_filtered
-    
-    result = pd.DataFrame({
-        "text_raw": df[text_col].astype(str),
-        "original_label": df[label_col].astype(str),
-        "source": "MSDA",
-    })
-    
-    return result
+    # Check for parquet from DarijaBench
+    parquet_file = msda_dir / "msda_darijabench.parquet"
+    if parquet_file.exists():
+        df_p = pd.read_parquet(parquet_file)
+        rows = []
+        for idx, row in df_p.iterrows():
+            msgs = row["messages"]
+            user_txt = msgs[0]["content"]
+            label = msgs[1]["content"]
+            m = re.search(r'العبارة:\s*(.*?)\s*\n\s*الإحتمالات:', user_txt, re.DOTALL)
+            text = m.group(1).strip() if m else user_txt
+            rows.append({"text": text, "sentiment": label})
+        df = pd.DataFrame(rows)
+        print(f"  MSDA: extracted {len(df)} rows from {parquet_file.name}")
+        return pd.DataFrame({
+            "text_raw": df["text"].astype(str),
+            "original_label": df["sentiment"].astype(str),
+            "source": "MSDA",
+        })
+
+    print(f"⚠️  No MSDA data files found in {msda_dir}")
+    return pd.DataFrame()
 
 
 def load_mac(data_dir: Path) -> pd.DataFrame:
     """
     Load MAC (Moroccan Arabic Corpus) dataset.
     
-    Expected structure: data/raw/MAC/ with CSV files.
+    Expected structure: data/raw/MAC/ with MAC corpus.csv
     Labels: 4-class (positive, negative, neutral, mixed).
     """
     mac_dir = data_dir / "MAC"
@@ -243,36 +230,21 @@ def load_mac(data_dir: Path) -> pd.DataFrame:
         print(f"⚠️  MAC directory not found at {mac_dir}")
         return pd.DataFrame()
     
-    dfs = []
-    for ext in ["*.csv", "*.tsv", "*.xlsx"]:
-        for f in mac_dir.glob(ext):
-            try:
-                if f.suffix == ".xlsx":
-                    df = pd.read_excel(f)
-                elif f.suffix == ".tsv":
-                    df = pd.read_csv(f, sep="\t", encoding="utf-8")
-                else:
-                    # Try multiple encodings
-                    for enc in ["utf-8", "utf-8-sig", "latin-1", "cp1256"]:
-                        try:
-                            df = pd.read_csv(f, encoding=enc)
-                            break
-                        except UnicodeDecodeError:
-                            continue
-                dfs.append(df)
-                print(f"  Loaded {f.name}: {len(df)} rows")
-            except Exception as e:
-                print(f"  Error reading {f}: {e}")
-    
-    if not dfs:
-        print(f"⚠️  No data files found in {mac_dir}")
-        return pd.DataFrame()
-    
-    df = pd.concat(dfs, ignore_index=True)
+    corpus_file = mac_dir / "MAC corpus.csv"
+    if not corpus_file.exists():
+        csv_files = list(mac_dir.glob("*.csv"))
+        if not csv_files:
+            print(f"⚠️  No CSV files found in {mac_dir}")
+            return pd.DataFrame()
+        corpus_file = csv_files[0]
+        
+    print(f"  Reading MAC file: {corpus_file.name}")
+    df = pd.read_csv(corpus_file, encoding="utf-8")
     print(f"  MAC: loaded {len(df)} rows, columns: {list(df.columns)}")
     
-    text_col = _find_column(df, ["text", "tweet", "Text", "Tweet", "sentence", "comment"])
-    label_col = _find_column(df, ["label", "sentiment", "Label", "Sentiment", "class", "polarity"])
+    # In MAC, 'tweets' is text and 'type' is the sentiment label
+    text_col = "tweets" if "tweets" in df.columns else _find_column(df, ["text", "tweet", "sentence"])
+    label_col = "type" if "type" in df.columns else _find_column(df, ["sentiment", "label", "polarity"])
     
     if text_col is None or label_col is None:
         print(f"  ⚠️  Could not identify text/label columns in MAC. Columns: {list(df.columns)}")
@@ -313,7 +285,6 @@ def _find_column(df: pd.DataFrame, candidates: list[str]) -> str | None:
     for col in candidates:
         if col in df.columns:
             return col
-    # Try case-insensitive
     lower_cols = {c.lower(): c for c in df.columns}
     for cand in candidates:
         if cand.lower() in lower_cols:
@@ -326,7 +297,6 @@ def map_label(label_str: str) -> str | None:
     label_str = str(label_str).strip()
     if label_str in LABEL_MAP:
         return LABEL_MAP[label_str]
-    # Try lowercase
     if label_str.lower() in LABEL_MAP:
         return LABEL_MAP[label_str.lower()]
     return None
