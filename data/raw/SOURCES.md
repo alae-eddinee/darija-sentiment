@@ -37,7 +37,8 @@ This document records the origin, URLs, citations, and licenses for all public d
 
 ## 4. YouTube Scraped Data (Test Set Source)
 
-- **Script:** `src/scrape_youtube.py`
-- **Video IDs:** `data/video_ids.txt` (20 selected Moroccan videos across comedy, football, news, music, and reviews)
-- **Collection:** YouTube Data API v3 (blocked on user `YOUTUBE_API_KEY` in `.env`)
-- **License:** YouTube API Terms of Service
+- **Script:** `src/scrape_youtube.py` (Supports direct scraping via `youtube-comment-downloader` without API keys, with fallback to YouTube Data API v3).
+- **Video IDs:** `data/video_ids.txt` (12 verified active Moroccan videos across rap music, comedy, cultural documentaries, pop, and vlogs).
+- **Collected Size:** 3,037 authentic comments scraped and stored in `data/raw/youtube_comments/comments.csv`.
+- **Test Sample:** 600 comments sampled with overrepresented Arabizi and Mixed script in `data/to_label.csv` and annotated in `data/labeled_test.csv`.
+- **License:** YouTube Terms of Service / Academic Research Use.
