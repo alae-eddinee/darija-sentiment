@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { predictSentiment } from "@/lib/inference";
 
 export async function POST(req: Request) {
   try {
@@ -8,25 +9,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Text is required" }, { status: 400 });
     }
 
-    const res = await fetch("http://127.0.0.1:8000/predict", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      return NextResponse.json({ error: err || "Prediction failed" }, { status: res.status });
+    // Optional: Proxy to dedicated FastAPI backend if configured
+    const backendUrl = process.env.BACKEND_URL;
+    if (backendUrl) {
+      try {
+        const res = await fetch(`${backendUrl}/predict`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return NextResponse.json(data);
+        }
+      } catch {
+        // Fallback to internal inference engine
+      }
     }
 
-    const data = await res.json();
-    return NextResponse.json(data);
+    // Built-in serverless inference engine (zero external dependencies)
+    const result = predictSentiment(text);
+    return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal Server Error";
-    return NextResponse.json(
-      { error: "Backend API unavailable. Ensure FastAPI is running on port 8000.", details: message },
-      { status: 503 }
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
