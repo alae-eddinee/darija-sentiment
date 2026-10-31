@@ -1,6 +1,7 @@
 # 🇲🇦 Moroccan Darija Mixed-Script Sentiment Classifier
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falae-eddinee%2Fdarija-sentiment&root-directory=web)
+[![Live Demo on Vercel](https://img.shields.io/badge/%E2%96%B2%20Live%20Demo-darija--sentiment.vercel.app-black?style=for-the-badge&logo=vercel)](https://darija-sentiment.vercel.app)
+
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/alae-eddinee/darija-sentiment)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
