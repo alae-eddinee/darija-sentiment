@@ -1,7 +1,10 @@
 # 🇲🇦 Moroccan Darija Mixed-Script Sentiment Classifier
 
-[![Live Demo on Vercel](https://img.shields.io/badge/%E2%96%B2%20Live%20Demo-darija--sentiment.vercel.app-black?style=for-the-badge&logo=vercel)](https://darija-sentiment.vercel.app)
+<p align="center">
+  <img src="docs/assets/banner.jpg" alt="Moroccan Darija Mixed-Script Sentiment Classifier" width="100%" style="border-radius: 12px;" />
+</p>
 
+[![Live Demo on Vercel](https://img.shields.io/badge/%E2%96%B2%20Live%20Demo-darija--sentiment.vercel.app-black?style=for-the-badge&logo=vercel)](https://darija-sentiment.vercel.app)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/alae-eddinee/darija-sentiment)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
@@ -15,6 +18,10 @@ An end-to-end Machine Learning, NLP, and Next.js web application for sentiment a
 ---
 
 ## 📊 Benchmark Results
+
+<p align="center">
+  <img src="docs/assets/visual_benchmark_comparison.png" alt="Benchmark Comparison across Script Slices" width="100%" />
+</p>
 
 Evaluated on **7,659 unseen held-out comments** across 51,054 aggregated samples:
 
@@ -33,7 +40,7 @@ Evaluated on **7,659 unseen held-out comments** across 51,054 aggregated samples
 
 ---
 
-## 🎯 The Problem
+## 🎯 The Problem & Arabizi Decoding
 
 Moroccan Darija (الدارجة المغربية) is one of the most linguistically complex dialects in the Arabic-speaking world:
 1. **No Standard Orthography**: The same word can be spelled in countless ways (*bzaf*, *bezzaf*, *bzzaf*, *بزاف*).
@@ -42,17 +49,30 @@ Moroccan Darija (الدارجة المغربية) is one of the most linguistica
 
 Standard off-the-shelf sentiment models trained on Modern Standard Arabic or French fail completely when exposed to this linguistic mixture.
 
+<p align="center">
+  <img src="docs/assets/visual_arabizi_phoneme_guide.png" alt="Moroccan Arabizi Phoneme Guide" width="100%" />
+</p>
+
 ---
 
-## 📂 Datasets & Credits
+## 📂 Datasets & Architecture
 
-The project aggregates and standardizes **36,201 comments** across three primary research datasets:
+<p align="center">
+  <img src="docs/assets/visual_dataset_architecture.png" alt="Dataset Distribution & Corpus Composition" width="100%" />
+</p>
+
+The project aggregates and standardizes **51,054 comments** across six primary research datasets:
 
 | Dataset | Type | Cleaned Samples | Labels | License | Citation |
 |---|---|---|---|---|---|
 | **MYC** (Moroccan YouTube Corpus) | YouTube Comments | 18,699 | Positive, Negative | Open Academic | Jbel (2023), arXiv:2303.15987 |
 | **MAC** (Moroccan Arabic Corpus) | Tweets | 12,337 | Positive, Negative, Neutral, Mixed | Open Access | Garouani & Kharroubi (2022), Springer |
 | **MSDA** (UM6P Dialect Corpus) | Tweets | 5,165 | Positive, Negative, Neutral | Open Access | Boujou et al. (2021), arXiv:2102.11000 |
+| **TSAC** (Tunisian/Maghrebi Sentiment) | Social Reviews | 8,913 | Positive, Negative | Open Academic | Meddeb et al. |
+| **MSAC** (Moroccan Social Sentiment) | Public Posts | 4,940 | Positive, Negative | Open Access | Academic Dialect Initiative |
+| **Curated Moroccan Lexicon** | Greetings & Blessings | 1,000 | Positive, Neutral, Negative | Custom | In-domain validation additions |
+
+*Full licensing details and provenance are cataloged in [`data/raw/SOURCES.md`](data/raw/SOURCES.md).*
 
 *Full licensing details and provenance are cataloged in [`data/raw/SOURCES.md`](data/raw/SOURCES.md).*
 
@@ -94,7 +114,7 @@ From our qualitative analysis of 50 misclassified test comments ([`notebooks/03_
 
 ### 1. Installation
 ```bash
-git clone https://github.com/YOUR_USERNAME/darija-sentiment.git
+git clone https://github.com/alae-eddinee/darija-sentiment.git
 cd darija-sentiment
 python3.11 -m venv venv
 source venv/bin/activate
