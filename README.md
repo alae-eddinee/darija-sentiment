@@ -1,10 +1,12 @@
 # 🇲🇦 Moroccan Darija Mixed-Script Sentiment Classifier
 
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces%20Demo-blue)](https://huggingface.co/spaces/YOUR_USERNAME/darija-sentiment)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falae-eddinee%2Fdarija-sentiment&root-directory=web)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/alae-eddinee/darija-sentiment)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An end-to-end Machine Learning and NLP system for sentiment analysis (**Positive**, **Negative**, **Neutral**) on Moroccan Darija social media comments. The primary innovation of this project is its robust handling of **mixed-script text**:
+An end-to-end Machine Learning, NLP, and Next.js web application for sentiment analysis (**Positive**, **Negative**, **Neutral**) on Moroccan Darija social media text. Engineered for **mixed-script text**:
 - 📝 **Arabic Script** (الدارجة بالحرف العربي)
 - 🔤 **Arabizi / Latin Script with Numbers** (`2`, `3`, `5`, `7`, `9` representing Arabic phonemes: *3jbni*, *zwin bzaf*, *7chouma*)
 - 🇫🇷 **French Code-Switching** (*Franchement c'est top*, *wallah c'est décevant*)
@@ -13,18 +15,18 @@ An end-to-end Machine Learning and NLP system for sentiment analysis (**Positive
 
 ## 📊 Benchmark Results
 
-Evaluated on **5,431 unseen held-out comments** using stratified splits across all scripts:
+Evaluated on **7,659 unseen held-out comments** across 51,054 aggregated samples:
 
 | Model | Slice | Macro-F1 | Accuracy | F1 (Positive) | F1 (Negative) | F1 (Neutral) | N Samples |
 |---|---|---|---|---|---|---|---|
-| **Logistic Regression (TF-IDF)** | **Overall** | **0.7436** | **79.34%** | **0.8543** | **0.8282** | **0.5482** | 5,431 |
-| Logistic Regression (TF-IDF) | Arabic | 0.7310 | 76.86% | 0.8354 | 0.8174 | 0.5401 | 4,560 |
-| Logistic Regression (TF-IDF) | Arabizi | 0.6678 | 93.41% | 0.9575 | 0.8718 | 0.1739 | 713 |
-| Logistic Regression (TF-IDF) | Mixed | 0.8564 | 87.34% | 0.9029 | 0.8400 | 0.8261 | 158 |
-| **Linear SVM (Calibrated)** | **Overall** | **0.7314** | **80.78%** | **0.8640** | **0.8345** | **0.4959** | 5,431 |
-| Linear SVM (Calibrated) | Arabic | 0.7230 | 78.75% | 0.8492 | 0.8267 | 0.4930 | 4,560 |
-| Linear SVM (Calibrated) | Arabizi | 0.6142 | 92.43% | 0.9529 | 0.8315 | 0.0580 | 713 |
-| Linear SVM (Calibrated) | Mixed | 0.8018 | 86.71% | 0.9011 | 0.8148 | 0.6897 | 158 |
+| **Logistic Regression (TF-IDF)** | **Overall** | **0.7539** | **81.80%** | **0.8682** | **0.8507** | **0.5428** | 7,659 |
+| Logistic Regression (TF-IDF) | Arabic | 0.7320 | 77.89% | 0.8421 | 0.8260 | 0.5279 | 5,716 |
+| Logistic Regression (TF-IDF) | Arabizi | **0.8924** | **94.15%** | **0.9592** | **0.9080** | **0.8100** | 1,745 |
+| Logistic Regression (TF-IDF) | Mixed | 0.7485 | 85.86% | 0.8841 | 0.8125 | 0.5489 | 198 |
+| **Linear SVM (Calibrated)** | **Overall** | **0.7322** | **83.37%** | **0.8781** | **0.8546** | **0.4640** | 7,659 |
+| Linear SVM (Calibrated) | Arabic | 0.7160 | 80.32% | 0.8576 | 0.8351 | 0.4552 | 5,716 |
+| Linear SVM (Calibrated) | Arabizi | 0.8346 | 93.01% | 0.9520 | 0.8887 | 0.6631 | 1,745 |
+| Linear SVM (Calibrated) | Mixed | 0.7489 | 86.36% | 0.8897 | 0.8182 | 0.5385 | 198 |
 
 *(For transformer fine-tuning benchmarks with DarijaBERT and XLM-RoBERTa, see [`COLAB_INSTRUCTIONS.md`](COLAB_INSTRUCTIONS.md).)*
 
