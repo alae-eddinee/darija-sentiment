@@ -259,6 +259,63 @@ def load_mac(data_dir: Path) -> pd.DataFrame:
     return result
 
 
+def load_msac(data_dir: Path) -> pd.DataFrame:
+    """Load MSAC (Moroccan Sentiment Analysis Corpus)."""
+    msac_file = data_dir / "MSAC" / "msac.parquet"
+    if not msac_file.exists():
+        print(f"⚠️  MSAC file not found at {msac_file}")
+        return pd.DataFrame()
+    
+    df = pd.read_parquet(msac_file)
+    print(f"  MSAC: loaded {len(df)} rows")
+    return pd.DataFrame({
+        "text_raw": df["text"].astype(str),
+        "original_label": df["label"].astype(str),
+        "source": "MSAC",
+    })
+
+
+def load_tsac(data_dir: Path) -> pd.DataFrame:
+    """Load TSAC (Maghrebi / Tunisian Dialect Sentiment Analysis Corpus - Arabizi heavy)."""
+    tsac_dir = data_dir / "TSAC"
+    if not tsac_dir.exists():
+        print(f"⚠️  TSAC directory not found at {tsac_dir}")
+        return pd.DataFrame()
+    
+    dfs = []
+    for split_file in [tsac_dir / "tsac_train.parquet", tsac_dir / "tsac_test.parquet"]:
+        if split_file.exists():
+            df_split = pd.read_parquet(split_file)
+            dfs.append(df_split)
+            
+    if not dfs:
+        return pd.DataFrame()
+        
+    df = pd.concat(dfs, ignore_index=True)
+    print(f"  TSAC: loaded {len(df)} rows across train/test splits")
+    return pd.DataFrame({
+        "text_raw": df["Text"].astype(str),
+        "original_label": df["label"].astype(str),
+        "source": "TSAC",
+    })
+
+
+def load_moroccan_lexicon(data_dir: Path) -> pd.DataFrame:
+    """Load curated Moroccan blessings, praises, slang, and dialect polarity corpus."""
+    lex_file = data_dir / "moroccan_lexicon" / "moroccan_curated_sentiment.csv"
+    if not lex_file.exists():
+        print(f"⚠️  Moroccan curated lexicon file not found at {lex_file}")
+        return pd.DataFrame()
+        
+    df = pd.read_csv(lex_file, encoding="utf-8")
+    print(f"  Moroccan Lexicon: loaded {len(df)} rows")
+    return pd.DataFrame({
+        "text_raw": df["text_raw"].astype(str),
+        "original_label": df["label"].astype(str),
+        "source": "MoroccanLexicon",
+    })
+
+
 def load_youtube_scraped(data_dir: Path) -> pd.DataFrame:
     """Load YouTube scraped comments (unlabeled)."""
     yt_file = data_dir / "youtube_comments" / "comments.csv"
@@ -321,7 +378,14 @@ def merge_and_clean(raw_dir: Path, output_path: Path, include_unlabeled: bool = 
     print("\n📂 Loading datasets...")
     datasets = []
     
-    for name, loader in [("MYC", load_myc), ("MSDA", load_msda), ("MAC", load_mac)]:
+    for name, loader in [
+        ("MYC", load_myc),
+        ("MSDA", load_msda),
+        ("MAC", load_mac),
+        ("MSAC", load_msac),
+        ("TSAC", load_tsac),
+        ("MoroccanLexicon", load_moroccan_lexicon),
+    ]:
         print(f"\n--- {name} ---")
         df = loader(raw_dir)
         if len(df) > 0:

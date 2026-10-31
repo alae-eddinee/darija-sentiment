@@ -5,11 +5,11 @@
 | # | Phase | Status | Details |
 |---|-------|--------|---------|
 | 1 | Setup | ✅ Done | Repo structure, requirements, docs, git init |
-| 2 | Data Collection | ✅ Done | MYC (18.7k), MAC (12.3k), MSDA (5.2k) + 3,037 comments scraped without YouTube API |
-| 3 | Data Cleaning & Script Detection | ✅ Done | 36,201 rows in `combined.parquet`, 26 tests passed |
+| 2 | Data Collection | ✅ Done | MYC (18.7k), MAC (12.3k), TSAC (10.7k), MSDA (5.2k), MoroccanLexicon (2.2k), MSAC (2.0k) |
+| 3 | Data Cleaning & Script Detection | ✅ Done | 51,054 rows in `combined.parquet` (11.6k Arabizi, 38.1k Arabic, 1.3k Mixed), 26 tests passed |
 | 4 | EDA | ✅ Done | `notebooks/01_eda.ipynb` executed, 5 charts in `results/` |
 | 5 | Labeled Test Set & Tooling | ✅ Done | `data/to_label.csv` & `data/labeled_test.csv` (600 comments), Streamlit tool (`app/label_tool.py`) |
-| 6 | Baseline Models (Local CPU) | ✅ Done | TF-IDF + LogReg & LinearSVM, evaluated on held-out split & custom labeled test set |
+| 6 | Baseline Models (Local CPU) | ✅ Done | TF-IDF + LogReg & LinearSVM retrained on 51k samples; Arabizi Macro-F1 rose to 0.8924 |
 | 7 | Transformer Fine-Tuning (Colab) | ✅ Done | `02_finetune_colab.ipynb` for Colab T4, `COLAB_INSTRUCTIONS.md` |
 | 8 | Error Analysis | ✅ Done | `notebooks/03_errors.ipynb` executed, 50 misclassified cases analyzed |
 | 9 | Shipping | ✅ Done | Gradio demo (`app/app.py`), HF Hub pusher (`src/push_to_hub.py`), README, writeup |
@@ -18,17 +18,17 @@
 
 ## 🏆 Benchmark Results
 
-### 1. Held-Out Test Set (5,431 unseen comments, stratified by class & script):
+### 1. Held-Out Test Set (7,659 unseen comments, stratified by class & script):
 | Model | Slice | Macro-F1 | Accuracy | F1 (Positive) | F1 (Negative) | F1 (Neutral) | N Samples |
 |---|---|---|---|---|---|---|---|
-| **Logistic Regression (TF-IDF)** | **Overall** | **0.7436** | **79.34%** | **0.8543** | **0.8282** | **0.5482** | 5,431 |
-| Logistic Regression (TF-IDF) | Arabic | 0.7310 | 76.86% | 0.8354 | 0.8174 | 0.5401 | 4,560 |
-| Logistic Regression (TF-IDF) | Arabizi | 0.6678 | 93.41% | 0.9575 | 0.8718 | 0.1739 | 713 |
-| Logistic Regression (TF-IDF) | Mixed | **0.8564** | **87.34%** | 0.9029 | 0.8400 | 0.8261 | 158 |
-| **Linear SVM (Calibrated)** | **Overall** | **0.7314** | **80.78%** | **0.8640** | **0.8345** | **0.4959** | 5,431 |
-| Linear SVM (Calibrated) | Arabic | 0.7230 | 78.75% | 0.8492 | 0.8267 | 0.4930 | 4,560 |
-| Linear SVM (Calibrated) | Arabizi | 0.6142 | 92.43% | 0.9529 | 0.8315 | 0.0580 | 713 |
-| Linear SVM (Calibrated) | Mixed | 0.8018 | 86.71% | 0.9011 | 0.8148 | 0.6897 | 158 |
+| **Logistic Regression (TF-IDF)** | **Overall** | **0.7539** | **81.80%** | **0.8682** | **0.8507** | **0.5428** | 7,659 |
+| Logistic Regression (TF-IDF) | Arabic | 0.7320 | 77.89% | 0.8421 | 0.8260 | 0.5279 | 5,716 |
+| Logistic Regression (TF-IDF) | Arabizi | **0.8924** | **94.15%** | **0.9592** | **0.9080** | **0.8100** | 1,745 |
+| Logistic Regression (TF-IDF) | Mixed | 0.7485 | 85.86% | 0.8841 | 0.8125 | 0.5489 | 198 |
+| **Linear SVM (Calibrated)** | **Overall** | **0.7322** | **83.37%** | **0.8781** | **0.8546** | **0.4640** | 7,659 |
+| Linear SVM (Calibrated) | Arabic | 0.7160 | 80.32% | 0.8576 | 0.8351 | 0.4552 | 5,716 |
+| Linear SVM (Calibrated) | Arabizi | 0.8346 | 93.01% | 0.9520 | 0.8887 | 0.6631 | 1,745 |
+| Linear SVM (Calibrated) | Mixed | 0.7489 | 86.36% | 0.8897 | 0.8182 | 0.5385 | 198 |
 
 ### 2. Custom Scraped YouTube Test Set (`data/labeled_test.csv`, 600 comments):
 | Model | Slice | Macro-F1 | Accuracy | N Samples |
