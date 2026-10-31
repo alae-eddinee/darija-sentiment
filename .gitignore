@@ -50,6 +50,11 @@ build/
 *.egg-info/
 *.egg
 
+# Web / Next.js
+web/node_modules/
+web/.next/
+web/out/
+
 # Testing
 .pytest_cache/
 .coverage
