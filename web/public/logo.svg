@@ -1,18 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40" fill="none">
-  <!-- Rounded Black Tile -->
-  <rect width="40" height="40" rx="10" fill="#09090b" />
-  
-  <!-- Subtle border highlight -->
-  <rect x="0.5" y="0.5" width="39" height="39" rx="9.5" stroke="rgba(255,255,255,0.15)" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36" fill="none">
+  <!-- Clean Obsidian Tile -->
+  <rect width="36" height="36" rx="9" fill="#09090b" />
+  <rect x="0.5" y="0.5" width="35" height="35" rx="8.5" stroke="rgba(255, 255, 255, 0.12)" />
 
-  <!-- Moroccan Pentagram Star (Interlaced Lines) -->
-  <path 
-    d="M20 9.5 L23.09 18.91 L33.09 18.91 L25 24.79 L28.09 34.21 L20 28.33 L11.91 34.21 L15 24.79 L6.91 18.91 L16.91 18.91 Z" 
-    stroke="#ffffff" 
-    stroke-width="2.2" 
-    stroke-linejoin="round"
+  <!-- Authentic Moroccan Pentagram (Exact Geometry) -->
+  <path
+    d="M 18,7.5 L 24.16,26.47 L 8.04,14.76 L 27.96,14.76 L 11.84,26.47 Z"
+    stroke="#ffffff"
+    stroke-width="1.6"
     stroke-linecap="round"
+    stroke-linejoin="round"
     fill="none"
   />
-  <circle cx="20" cy="21.5" r="2" fill="#10b981" />
 </svg>

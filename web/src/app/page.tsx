@@ -101,13 +101,13 @@ export default function Home() {
       <div className="w-full max-w-xl flex flex-col gap-5">
         {/* Sleek Minimal Header with Logo */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Logo className="w-9 h-9" />
+          <div className="flex items-center gap-2.5">
+            <Logo className="w-8 h-8" />
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-black flex items-center gap-1.5 leading-none">
+              <h1 className="text-base font-semibold tracking-tight text-black leading-tight">
                 Darija Sentiment
               </h1>
-              <p className="text-[11px] text-zinc-600 font-medium mt-1">
+              <p className="text-[11px] text-zinc-600 font-medium">
                 Moroccan Mixed-Script AI
               </p>
             </div>
